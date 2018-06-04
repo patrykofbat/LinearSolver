@@ -42,6 +42,7 @@ public class Main {
 
         double[][] inequalities =  {inputData.get(0), inputData.get(1)};
         SimpleMatrix matrix = new SimpleMatrix(inequalities);
+        System.out.println(matrix);
 
         LinearProgram linearProgram = new LinearProgram(matrix.transpose(), inputData.get(2));
         linearProgram.run();
