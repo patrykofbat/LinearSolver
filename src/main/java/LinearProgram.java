@@ -14,6 +14,12 @@ public class LinearProgram {
         this.golaFunctionCoefficients = golaFunctionCoefficients;
     }
 
+    private double round(double number){
+        BigDecimal bg = new BigDecimal(number);
+        bg = bg.setScale(6, BigDecimal.ROUND_HALF_UP);
+        return bg.doubleValue();
+    }
+
     private double[] linearFunctionSolve(double[] f1, double[] f2){
         double x;
         double y;
@@ -22,8 +28,8 @@ public class LinearProgram {
         if((f2[0] * f1[1]) - (f1[0] * f2 [1]) != 0) {
             x = ((f2[2] * f1[1]) - (f1[2] * f2[1])) / ((f2[0] * f1[1]) - (f1[0] * f2[1]));
             y = (-1/f1[1])*(f1[0] * x - f1[2]);
-            solution[0] = x;
-            solution[1] = y;
+            solution[0] = round(x);
+            solution[1] = round(y);
             return solution;
         }
         else
@@ -35,11 +41,11 @@ public class LinearProgram {
         double y;
         if(axis.equals("x")){
             x = 0;
-            y = f1[2]/f1[1];
+            y = round(f1[2]/f1[1]);
         }
         else {
             y = 0;
-            x = f1[2]/f1[0];
+            x = round(f1[2]/f1[0]);
         }
         double[] solution = {x, y};
         return solution;
@@ -55,7 +61,7 @@ public class LinearProgram {
         else{
             for(int i = 0; i< this.inequalities.numRows()-1; i++){
                 double[] f1 ={this.inequalities.get(i,0), this.inequalities.get(i,1), this.golaFunctionCoefficients[i]};
-                if(f1[0] * solution[0] + f1[1] * solution[1] <= f1[2])
+                if(round(f1[0] * solution[0] + f1[1] * solution[1]) <= f1[2])
                     isAllowed = true;
                 else
                     return false;
@@ -98,17 +104,40 @@ public class LinearProgram {
         if(isAllowed(crossY))
             solutions.add(crossY);
 
-        int i = 1;
+
         int last = this.inequalities.numRows()-1;
         double firstFactor = this.inequalities.get(last, 0);
         double secondFactor = this.inequalities.get(last, 1);
+        double[] optiumDual = new double[2];
+        double max = 0;
         for(double[] sol : solutions) {
-            if (sol != null) {
-                System.out.println(i+ ". " +"x = " + sol[0] + " y = " + sol[1]);
-                i++;
-                System.out.println(sol[0] * firstFactor + sol[1] * secondFactor);
+            double currentValue = sol[0] * firstFactor + sol[1] * secondFactor;
+            if(currentValue > max){
+                max = currentValue;
+                optiumDual[0] = sol[0];
+                optiumDual[1] = sol[1];
             }
+
         }
+
+        System.out.println("Optium dual x1 = " + optiumDual[0] + " x2 = " + optiumDual[1] );
+        int[] zeroVariables = new int[this.inequalities.numRows()-1];
+
+        for(int i = 0; i<this.inequalities.numRows()-1;i++){
+            double[] fun ={this.inequalities.get(i,0), this.inequalities.get(i,1), this.golaFunctionCoefficients[i]};
+
+            if(round((fun[0] * optiumDual[0]) + (fun[1] * optiumDual[1])) < fun[2])
+                zeroVariables[i] = 0;
+            else
+                zeroVariables[i] = 1;
+
+        }
+
+        for(int x : zeroVariables){
+            System.out.println(x);
+        }
+
+
 
 
 
